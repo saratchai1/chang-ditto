@@ -5,7 +5,7 @@ on:
     branches:
       - feat/field-service-mvp
     paths:
-      - _payload/chang-assets.tgz.b64
+      - _payload/ready
 
 permissions:
   contents: write
@@ -20,12 +20,13 @@ jobs:
           ref: ${{ github.ref_name }}
           persist-credentials: true
 
-      - name: Decode application files
+      - name: Decode and verify application files
         shell: bash
         run: |
-          base64 --decode _payload/chang-assets.tgz.b64 > /tmp/chang-assets.tgz
+          cat _payload/chang-assets.part* | base64 --decode > /tmp/chang-assets.tgz
+          echo "83d1ad166cb9e263abea8c7d853b151e9e2e8c6b0b527fbac06b55fe385d0f17  /tmp/chang-assets.tgz" | sha256sum -c -
           tar -xzf /tmp/chang-assets.tgz
-          rm -f _payload/chang-assets.tgz.b64
+          rm -rf _payload
           rm -f .github/workflows/unpack-assets.yml
 
       - name: Commit generated source
