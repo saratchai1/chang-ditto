@@ -1,0 +1,38 @@
+name: Unpack application assets
+
+on:
+  push:
+    branches:
+      - feat/field-service-mvp
+    paths:
+      - _payload/chang-assets.tgz.b64
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          persist-credentials: true
+
+      - name: Decode application files
+        shell: bash
+        run: |
+          base64 --decode _payload/chang-assets.tgz.b64 > /tmp/chang-assets.tgz
+          tar -xzf /tmp/chang-assets.tgz
+          rm -f _payload/chang-assets.tgz.b64
+          rm -f .github/workflows/unpack-assets.yml
+
+      - name: Commit generated source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: add field service application assets"
+          git push
